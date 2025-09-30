@@ -1,14 +1,44 @@
 const express = require("express");
 
+const connectDB = require("./config/database");
+
+const User = require("./modals/user");
 
 const app = express();
 
 
-app.use((req,res)=>{
-    res.send("Hello from the Server")
+app.post("/singup",async (req,res)=>{
+
+    const userObj = {
+        firstName: "Kushal",
+        lastName: "Bhakhandwal",
+        emailId: "Kushal@gmail.com",
+        password:"12345",
+
+    }
+
+  try {
+      const user = new User(userObj);
+   await  user.save();
+    res.send("User Created");
+    
+  } catch (error) {
+
+    res.status(500).send("Error creating user");
+    
+  }
+  
+
 })
 
+connectDB()
+  .then(() => {
+    console.log("Database connected");
 
-app.listen(3000,()=>{
-    console.log("Server is Running")
-});
+    app.listen(7777, () => {
+      console.log("Server is Running");
+    });
+  })
+  .catch((err) => {
+    console.log("Database connection failed", err);
+  });
