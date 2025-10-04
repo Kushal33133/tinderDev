@@ -6,19 +6,12 @@ const User = require("./modals/user");
 
 const app = express();
 
+app.use(express.json());
+
 
 app.post("/singup",async (req,res)=>{
-
-    const userObj = {
-        firstName: "Kushal",
-        lastName: "Bhakhandwal",
-        emailId: "Kushal@gmail.com",
-        password:"12345",
-
-    }
-
   try {
-      const user = new User(userObj);
+      const user = new User(req.body);
    await  user.save();
     res.send("User Created");
     
