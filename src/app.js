@@ -7,10 +7,17 @@ const { validateSihnUp } = require("./utils/validation");
 const User = require("./modals/user");
 
 const bcrypt = require("bcryptjs");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
+const {userAuth} = require("./middleware/auth");
 
 const app = express();
-
+app.use(cookieParser())
 app.use(express.json());
+
+
+
 
 app.post("/singup", async (req, res) => {
   try {
@@ -21,9 +28,38 @@ app.post("/singup", async (req, res) => {
     await user.save();
     res.send("User Created");
   } catch (error) {
-    res.status(500).send("Error creating user",error.message);
+res.status(500).send(`Error creating user: ${error.message}`);
   }
 });
+
+app.post("/profile" ,userAuth, async(req,res)=>{
+
+  try{
+  // const cookies = req.cookies;
+
+  // const {token} = cookies;
+  // if(!token){
+  //   res.status(401).send("Unauthorized: No token provided");
+  // }
+
+  // const decodeMessage = await jwt.verify(token,"SECRET_KEY");
+  // console.log(decodeMessage);
+  // const {_id} = decodeMessage;
+  // console.log("Logged in user id:" + _id);
+
+  // const user = await User.findById(_id);
+  // if(!user){
+  //   res.status(401).send("Unauthorized: No user found");
+  // }
+
+  const user = req.user;
+res.send(user);
+}
+catch (error) {
+res.status(500).send(`Error creating user: ${error.message}`);
+  }
+})
+
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
@@ -38,9 +74,12 @@ app.post("/login", async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(400).send("Invalid email or password");
     }
+    const token = jwt.sign({ _id:user._id},"SECRET_KEY",{expiresIn:"1d"})
+    // const token = await user.getJWT();
+    res.cookie("token",token);
     res.send("Login successful");
   } catch (error) {
-    res.status(500).send("Error creating user",error.message);
+   res.status(500).send(`Error creating user: ${error.message}`);
   }
 });
 
@@ -104,6 +143,12 @@ app.patch("/user/:userId", async (req, res) => {
   } catch (error) {
     res.status(500).send("Cannot make get request", error.message);
   }
+});
+
+app.post("/sendConnectionRequest", userAuth ,async (req, res) => {
+
+  const user = req.user;
+
 });
 
 connectDB()
